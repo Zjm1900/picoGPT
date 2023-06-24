@@ -39,6 +39,19 @@ def ffn(x, c_fc, c_proj):
 
     return x
 
+def attention(q, k, v, mask):
+    return softmax(q @ k.T / np.sqrt(q.shape[-1]) + mask) @ v
+
+def self_attention(x, c_attn, c_proj):
+    x = linear(x, **c_attn)
+    q, k, v = np.split(x, 3, axis=-1)
+
+    x = attention(q, k, v)
+
+    x = linear(x, **c_proj)
+
+    return x
+
 def transformer_block(x, mlp, attn, ln_1, ln_2, n_head): 
     # multi-head causal self attention
     x = x + mha(layer_norm(x, **ln_1), **attn, n_head=n_head)
